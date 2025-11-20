@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN rm -rf node_modules package-lock.json
 
 # 安装依赖
-RUN npm install
+RUN npm install  # 使用 npm install 安装依赖
 
 # 设置环境变量，确保 node_modules/.bin 被添加到 PATH 中
 ENV PATH /app/node_modules/.bin:$PATH
