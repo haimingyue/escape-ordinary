@@ -1,18 +1,14 @@
-version: '3'
+version: '3.8'
 
 services:
-  nuxt-app:
-    build: .
+  nuxt_app:
+    build:
+      context: . # Build from the current directory
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"  # 映射端口
-    restart: always  # 自动重启容器
-    volumes:
-      - .:/app  # 本地代码与容器同步，方便开发调试
+      - "3000:3000" # Map host port 3000 to container port 3000
     environment:
-      - NODE_ENV=production  # 设置生产环境变量
-    networks:
-      - nuxt_network  # 配置网络
-
-networks:
-  nuxt_network:
-    driver: bridge  # 使用桥接网络
+      - NODE_ENV=production # Set environment if needed, NUXT_HOST is already in Dockerfile
+    # Optional: use a volume for persistent data or during development for hot-reloading
+    # volumes:
+    #   - .:/app

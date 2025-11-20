@@ -1,23 +1,22 @@
-# 使用最新版本的 Node.js 镜像
-FROM node:25.2.1 as builder
-
-# 设置工作目录
+# Stage 1: Build the Nuxt application
+FROM node:25.2.1 AS build
 WORKDIR /app
+RUN corepack enable # Enables pnpm, yarn, etc.
+COPY package.json pnpm-lock.yaml* .npmrc ./ # Copy package and lock files
+RUN pnpm install --frozen-lockfile # Install dependencies
 
-# 将 package.json 和 package-lock.json 复制到容器中
-COPY . /app
+COPY . . # Copy the rest of the application files
+RUN pnpm build # Build the application for production
 
-# 安装依赖
-RUN npm config set registry https://registry.npmmirror.com && npm install && npm run build
-
-# 启动 Nuxt 应用
-
-FROM node:25.2.1
-
+# Stage 2: Run the production application
+FROM node:25.2.1 AS runtime
 WORKDIR /app
+COPY --from=build /app/.output ./.output # Copy built files from the build stage
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile --prod # Install production dependencies only
 
-COPY --from=builder /app/.output /app
+# Set environment variable to make the server listen on all network interfaces
+ENV HOST 0.0.0.0
+EXPOSE 3000
 
-RUN npm config set registry https://registry.npmmirror.com && npm install -g nuxt
-
-ENTRYPOINT ["npm", "run", "start"]
+CMD ["pnpm", "start"]
