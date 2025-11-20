@@ -1,4 +1,4 @@
-# 使用 Node.js 镜像
+# 使用最新版本的 Node.js 镜像
 FROM node:latest
 
 # 设置工作目录
@@ -12,6 +12,9 @@ RUN rm -rf node_modules package-lock.json
 
 # 安装依赖
 RUN npm install
+
+# 设置环境变量，确保 node_modules/.bin 被添加到 PATH 中
+ENV PATH /app/node_modules/.bin:$PATH
 
 # 将整个项目复制到容器中
 COPY . .
