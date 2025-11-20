@@ -1,5 +1,5 @@
 # 使用最新版本的 Node.js 镜像
-FROM node:latest
+FROM node:25.2.1
 
 # 设置工作目录
 WORKDIR /app
@@ -9,6 +9,8 @@ COPY package*.json ./
 
 # 删除旧的 node_modules 和 package-lock.json（如果存在）
 RUN rm -rf node_modules package-lock.json
+
+RUN npm install -g nuxt@4.2.1
 
 # 安装依赖
 RUN npm install  # 使用 npm install 安装依赖
