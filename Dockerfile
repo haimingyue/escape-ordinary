@@ -1,4 +1,4 @@
-# 使用 Node.js 镜像
+# 使用官方 Node.js 18 镜像
 FROM node:latest
 
 # 设置工作目录
@@ -7,8 +7,11 @@ WORKDIR /app
 # 将 package.json 和 package-lock.json 复制到容器中
 COPY package*.json ./
 
-# 安装依赖
-RUN npm install
+# 安装项目依赖
+RUN npm install  # 安装项目依赖
+
+# 如果 nuxt 没有列在 package.json 中，可以在此安装它
+RUN npm install -g nuxt  # 全局安装 nuxt
 
 # 将整个项目复制到容器中
 COPY . .
