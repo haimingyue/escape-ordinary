@@ -11,7 +11,7 @@
       </button>
       <div class="menu-overlay" v-if="isMenuOpen" @click="closeMenu"></div>
       <nav class="nav" :class="{ active: isMenuOpen }">
-        <a target="_blank" href="https://tlpy8.com/book-on-page.html" class="nav-link" @click="closeMenu">思维导图</a>
+        <a target="_blank" href="https://source.tlpy8.com/book-on-page.html" class="nav-link" @click="closeMenu">思维导图</a>
         <a target="_blank" href="https://space.bilibili.com/608088910" class="nav-link" @click="closeMenu">视频</a>
         <NuxtLink to="/top-50-books" class="nav-link" :class="{ active: isTop50BooksPage }" @click="closeMenu">50本推荐书籍</NuxtLink>
         <a href="https://space.bilibili.com/608088910" target="_blank" class="shop-btn" @click="closeMenu">支持</a>
