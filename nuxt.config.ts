@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.lyky8.com'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.tlpy8.com'
     }
   },
   server: {

@@ -19,7 +19,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   const runtimeConfig = useRuntimeConfig()
-  const apiBase = (runtimeConfig.public.apiBase || 'https://api.lyky8.com').replace(/\/$/, '')
+  const apiBase = (runtimeConfig.public.apiBase || 'https://api.tlpy8.com').replace(/\/$/, '')
   const router = nuxtApp.$router
 
   const visitorId = ensureStorageId(window.localStorage, VISITOR_KEY)

@@ -17,7 +17,7 @@ interface VisitStatsState {
 
 export function useVisitStats() {
   const runtimeConfig = useRuntimeConfig()
-  const apiBase = (runtimeConfig.public.apiBase || 'https://api.lyky8.com').replace(/\/$/, '')
+  const apiBase = (runtimeConfig.public.apiBase || 'https://api.tlpy8.com').replace(/\/$/, '')
 
   const state = useState<VisitStatsState>('visit-stats', () => ({
     data: null,
