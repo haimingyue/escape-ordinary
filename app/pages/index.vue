@@ -11,7 +11,7 @@
             <p class="sub-headline">我们创造</p>
             <h1 class="main-headline">最佳书籍和思想的视觉总结。</h1>
             <p class="description">
-              拥有超过 <strong>160万订阅者</strong>，我们是
+              拥有超过 <strong>1万订阅者</strong>，我们是
               <strong>视觉学习者</strong> 的首选频道，帮助他们掌握世界上最伟大的书籍和思想。
             </p>
             <NuxtLink to="/top-50-books" class="cta-btn">我的50本推荐书籍</NuxtLink>
