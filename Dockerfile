@@ -7,10 +7,10 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # 先拷贝依赖相关文件（你现在只有 package.json，就拷贝它）
-COPY package.json ./
+COPY package.json pnpm-lock.yaml* ./
 
 # 安装依赖（没 lockfile，就不要 frozen）
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile=false
 
 # 再拷贝剩余代码
 COPY . .
@@ -26,7 +26,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV NITRO_PRESET=node
+ENV NITRO_PORT=3000
 
 # 只复制构建产物
 COPY --from=build /app/.output ./.output
