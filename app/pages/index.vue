@@ -111,15 +111,143 @@
       </div>
     </section>
 
+    <!-- Visit stats Section -->
+    <section class="stats-section">
+      <div class="stats-container">
+        <div class="stats-header">
+          <div>
+            <p class="limited-text">访客统计</p>
+            <h2 class="stats-title">最近 7 天访问表现</h2>
+            <p class="stats-range" v-if="statsRange">{{ statsRange }}</p>
+          </div>
+          <div class="stats-actions">
+            <button class="refresh-btn" :disabled="statsLoading" @click="refreshStats">
+              {{ statsLoading ? '刷新中...' : '刷新数据' }}
+            </button>
+            <span class="stats-updated" v-if="lastUpdatedText">最近更新：{{ lastUpdatedText }}</span>
+          </div>
+        </div>
+
+        <div v-if="statsLoading" class="stats-message">正在加载访客数据...</div>
+        <div v-else-if="statsError" class="stats-message error">加载失败：{{ statsError }}</div>
+
+        <div v-else-if="stats" class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">总访问量</p>
+            <p class="stat-value">{{ formatNumber(stats.totalVisits) }}</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">独立访客</p>
+            <p class="stat-value">{{ formatNumber(stats.uniqueVisitors) }}</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">平均停留时长</p>
+            <p class="stat-value">{{ formatDuration(stats.averageDurationSeconds) }}</p>
+          </div>
+        </div>
+
+        <div class="stats-sublists" v-if="stats && (recentDailyStats.length || stats.topPages?.length)">
+          <div class="daily-panel" v-if="recentDailyStats.length">
+            <h3>最近趋势</h3>
+            <ul>
+              <li v-for="day in recentDailyStats" :key="day.date">
+                <span>{{ formatDayLabel(day.date) }}</span>
+                <strong>{{ formatNumber(day.visits) }} 次访问 / {{ formatNumber(day.uniqueVisitors) }} 独立</strong>
+              </li>
+            </ul>
+          </div>
+          <div class="daily-panel" v-if="stats.topPages?.length">
+            <h3>热门页面</h3>
+            <ul>
+              <li v-for="page in stats.topPages.slice(0, 5)" :key="page.pagePath">
+                <span>{{ page.pagePath }}</span>
+                <strong>{{ formatNumber(page.visits) }} 次访问</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <AppFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const showVideo3 = ref(false)
+const { stats, loading: statsLoading, error: statsError, lastFetched, refresh } = useVisitStats()
+
+const formatNumber = (value?: number | null) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value.toLocaleString('zh-CN')
+  }
+  return '--'
+}
+
+const formatDuration = (seconds?: number | null) => {
+  if (!seconds || !Number.isFinite(seconds)) {
+    return '--'
+  }
+  if (seconds < 60) {
+    return `${Math.round(seconds)} 秒`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remaining = Math.round(seconds % 60)
+  if (remaining === 0) {
+    return `${minutes} 分钟`
+  }
+  return `${minutes} 分 ${remaining} 秒`
+}
+
+const formatDayLabel = (value: string) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })
+}
+
+const formatDateTime = (value: string | number) => {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return ''
+  }
+  return date.toLocaleString('zh-CN', { hour12: false })
+}
+
+const statsRange = computed(() => {
+  if (!stats.value) {
+    return ''
+  }
+  return `${formatDateTime(stats.value.rangeStart)} - ${formatDateTime(stats.value.rangeEnd)}`
+})
+
+const recentDailyStats = computed(() => {
+  if (!stats.value?.dailyStats?.length) {
+    return []
+  }
+  const days = stats.value.dailyStats
+  return days.slice(Math.max(days.length - 5, 0))
+})
+
+const lastUpdatedText = computed(() => {
+  if (!lastFetched.value) {
+    return ''
+  }
+  return formatDateTime(lastFetched.value)
+})
+
+const refreshStats = () => refresh()
+
+onMounted(() => {
+  if (!stats.value) {
+    refreshStats()
+  }
+})
+
 useHead({
   title: 'Escaping Ordinary - 最佳书籍和思想的视觉总结'
 })
@@ -544,6 +672,152 @@ useHead({
   background: #333;
 }
 
+.stats-section {
+  background: #081526;
+  padding: 4rem 2rem;
+}
+
+.stats-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.stats-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.3rem;
+}
+
+.stats-range {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+.stats-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.refresh-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-btn:not(:disabled):hover {
+  background: rgba(25, 118, 210, 0.2);
+  border-color: #1976d2;
+}
+
+.stats-updated {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 0.8rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.stats-message {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 1.25rem;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.stats-message.error {
+  border-color: rgba(244, 67, 54, 0.6);
+  color: #ff8a80;
+}
+
+.stats-sublists {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.daily-panel {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.daily-panel h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.daily-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.daily-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+}
+
+.daily-panel li strong {
+  color: white;
+  font-weight: 600;
+}
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {
@@ -569,6 +843,15 @@ useHead({
 
   .video-title {
     font-size: 2rem;
+  }
+
+  .stats-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
