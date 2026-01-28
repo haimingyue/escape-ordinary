@@ -28,7 +28,7 @@
           <div class="footer-link-group">
             <a href="#" class="footer-link">条款和条件</a>
             <a href="#" class="footer-link">退款政策</a>
-            <a href="#" class="footer-link">隐私政策</a>
+            <NuxtLink to="/privacy-policy" class="footer-link" :class="{ active: isPrivacyPolicyPage }">隐私政策</NuxtLink>
           </div>
         </div>
       </div>
@@ -48,6 +48,10 @@ const isHomePage = computed(() => {
 
 const isTop50BooksPage = computed(() => {
   return route.path === '/top-50-books'
+})
+
+const isPrivacyPolicyPage = computed(() => {
+  return route.path === '/privacy-policy'
 })
 </script>
 
