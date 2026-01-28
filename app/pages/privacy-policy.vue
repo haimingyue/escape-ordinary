@@ -144,7 +144,7 @@
         <section class="policy-section">
           <h2 class="policy-heading">Contact</h2>
           <p class="policy-text">If you have questions about this Privacy Policy, please contact:</p>
-          <p class="policy-text">Email: your_email@example.com</p>
+          <p class="policy-text">Email: simoonqian1990@gmail.com</p>
         </section>
       </div>
     </main>
