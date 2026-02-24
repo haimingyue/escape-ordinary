@@ -3,8 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   runtimeConfig: {
+    apiServerBase: process.env.API_SERVER_BASE || 'https://api.tlpy8.com',
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'https://api.tlpy8.com'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || ''
     }
   },
   server: {

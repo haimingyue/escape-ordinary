@@ -19,7 +19,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   const runtimeConfig = useRuntimeConfig()
-  const apiBase = (runtimeConfig.public.apiBase || 'https://api.tlpy8.com').replace(/\/$/, '')
+  const apiBase = (runtimeConfig.public.apiBase || '').replace(/\/$/, '')
   const router = nuxtApp.$router
 
   const visitorId = ensureStorageId(window.localStorage, VISITOR_KEY)
@@ -43,7 +43,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       metadata: buildMetadata()
     }
 
-    sendVisit(`${apiBase}/api/visits`, payload)
+    const endpoint = apiBase ? `${apiBase}/api/visits` : '/api/visits'
+    sendVisit(endpoint, payload)
   }
 
   router.isReady().then(() => {

@@ -60,44 +60,25 @@
       <div class="videos-container">
         <h2 class="videos-title">最新视频</h2>
         <div class="videos-grid">
-          <div class="video-card atomic-habits">
-            <div class="video-iframe-wrapper">
-              <iframe
-                src="https://player.bilibili.com/player.html?bvid=BV1Nh4y147XK&page=1&autoplay=0"
-                scrolling="no"
-                border="0"
-                frameborder="no"
-                framespacing="0"
-                allowfullscreen="true"
-                class="video-iframe"
-              ></iframe>
-            </div>
-          </div>
-
-          <div class="video-card mind-traps">
-            <div class="video-iframe-wrapper">
-              <iframe
-                src="https://player.bilibili.com/player.html?bvid=BV1Bh4y1n7oC&page=1&autoplay=0"
-                scrolling="no"
-                border="0"
-                frameborder="no"
-                framespacing="0"
-                allowfullscreen="true"
-                class="video-iframe"
-              ></iframe>
-            </div>
-          </div>
-
-          <div class="video-card human-nature">
-            <div class="video-cover" v-if="!showVideo3" @click="showVideo3 = true">
-              <img src="/images/make/keyilianxi_cover.jpg" alt="视频封面" />
+          <div
+            v-for="video in videos"
+            :key="video.id"
+            class="video-card"
+            :class="video.cardClass"
+          >
+            <div
+              class="video-cover"
+              v-if="video.cover && !isVideoVisible(video.id)"
+              @click="showVideo(video.id)"
+            >
+              <img :src="video.cover" alt="视频封面" />
               <div class="play-overlay">
                 <div class="play-icon">▶</div>
               </div>
             </div>
-            <div class="video-iframe-wrapper" v-if="showVideo3">
+            <div class="video-iframe-wrapper" v-else>
               <iframe
-                src="https://player.bilibili.com/player.html?bvid=BV1dD4y1f7qM&page=1&autoplay=0"
+                :src="video.src"
                 scrolling="no"
                 border="0"
                 frameborder="no"
@@ -132,17 +113,13 @@
         <div v-else-if="statsError" class="stats-message error">加载失败：{{ statsError }}</div>
 
         <div v-else-if="stats" class="stats-grid">
-          <div class="stat-card">
-            <p class="stat-label">总访问量</p>
-            <p class="stat-value">{{ formatNumber(stats.totalVisits) }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">独立访客</p>
-            <p class="stat-value">{{ formatNumber(stats.uniqueVisitors) }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">平均停留时长</p>
-            <p class="stat-value">{{ formatDuration(stats.averageDurationSeconds) }}</p>
+          <div
+            v-for="card in statsSummaryCards"
+            :key="card.label"
+            class="stat-card"
+          >
+            <p class="stat-label">{{ card.label }}</p>
+            <p class="stat-value">{{ card.value }}</p>
           </div>
         </div>
 
@@ -177,7 +154,33 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-const showVideo3 = ref(false)
+type HomeVideo = {
+  id: string
+  src: string
+  cardClass: string
+  cover?: string
+}
+
+const videos: HomeVideo[] = [
+  {
+    id: 'atomic-habits',
+    src: 'https://player.bilibili.com/player.html?bvid=BV1Nh4y147XK&page=1&autoplay=0',
+    cardClass: 'atomic-habits'
+  },
+  {
+    id: 'mind-traps',
+    src: 'https://player.bilibili.com/player.html?bvid=BV1Bh4y1n7oC&page=1&autoplay=0',
+    cardClass: 'mind-traps'
+  },
+  {
+    id: 'human-nature',
+    src: 'https://player.bilibili.com/player.html?bvid=BV1dD4y1f7qM&page=1&autoplay=0',
+    cardClass: 'human-nature',
+    cover: '/images/make/keyilianxi_cover.jpg'
+  }
+]
+
+const visibleVideoIds = ref(new Set<string>())
 const { stats, loading: statsLoading, error: statsError, lastFetched, refresh } = useVisitStats()
 
 const formatNumber = (value?: number | null) => {
@@ -218,6 +221,18 @@ const formatDateTime = (value: string | number) => {
   return date.toLocaleString('zh-CN', { hour12: false })
 }
 
+const isVideoVisible = (videoId: string) => {
+  const targetVideo = videos.find((video) => video.id === videoId)
+  if (!targetVideo?.cover) {
+    return true
+  }
+  return visibleVideoIds.value.has(videoId)
+}
+
+const showVideo = (videoId: string) => {
+  visibleVideoIds.value.add(videoId)
+}
+
 const statsRange = computed(() => {
   if (!stats.value) {
     return ''
@@ -231,6 +246,26 @@ const recentDailyStats = computed(() => {
   }
   const days = stats.value.dailyStats
   return days.slice(Math.max(days.length - 5, 0))
+})
+
+const statsSummaryCards = computed(() => {
+  if (!stats.value) {
+    return []
+  }
+  return [
+    {
+      label: '总访问量',
+      value: formatNumber(stats.value.totalVisits)
+    },
+    {
+      label: '独立访客',
+      value: formatNumber(stats.value.uniqueVisitors)
+    },
+    {
+      label: '平均停留时长',
+      value: formatDuration(stats.value.averageDurationSeconds)
+    }
+  ]
 })
 
 const lastUpdatedText = computed(() => {

@@ -17,7 +17,7 @@ interface VisitStatsState {
 
 export function useVisitStats() {
   const runtimeConfig = useRuntimeConfig()
-  const apiBase = (runtimeConfig.public.apiBase || 'https://api.tlpy8.com').replace(/\/$/, '')
+  const apiBase = (runtimeConfig.public.apiBase || '').replace(/\/$/, '')
 
   const state = useState<VisitStatsState>('visit-stats', () => ({
     data: null,
@@ -31,7 +31,7 @@ export function useVisitStats() {
     state.value.error = null
 
     try {
-      const url = new URL('/api/visits/stats', apiBase)
+      const url = apiBase ? new URL('/api/visits/stats', apiBase) : new URL('/api/visits/stats', 'http://localhost')
       if (filters?.startTime) {
         url.searchParams.set('startTime', filters.startTime)
       }
@@ -42,14 +42,16 @@ export function useVisitStats() {
         url.searchParams.set('pagePath', filters.pagePath)
       }
 
-      const data = await $fetch<VisitStatsResponse>(url.toString(), {
+      const endpoint = apiBase ? url.toString() : `${url.pathname}${url.search}`
+
+      const data = await $fetch<VisitStatsResponse>(endpoint, {
         method: 'GET'
       })
       state.value.data = data
       state.value.lastFetched = Date.now()
     } catch (error) {
       console.error('[visit-stats] 加载失败', error)
-      state.value.error = error instanceof Error ? error.message : '未知错误'
+      state.value.error = '暂时无法加载统计数据，请稍后重试'
     } finally {
       state.value.loading = false
     }
